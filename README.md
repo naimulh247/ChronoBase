@@ -86,3 +86,12 @@ LogDB is not suitable for:
 - **Write-Heavy Production Systems**: Although performant, the memory-mapped approach may not be optimal for extremely write-heavy production systems with millions of writes per second
 - **Long-Term Archival**: The database is designed for active log storage and querying, not for long-term archival where compression and storage efficiency are priorities
 - **Distributed Systems**: LogDB is a single-node solution and doesn't provide built-in support for distributed operations or replication. Its ideal use case is local development and testing on a single machine.
+
+## Features to be added:
+- [ ] Log rotation, expiration
+- [ ] Time-range based searching
+- [ ] Complex queries (AND/OR operations)
+- [ ] Regex pattern matching in searches 😢
+- [ ] Add build package for distribution
+- [ ] Implement compression for long-term storage
+- [ ] Add more comprehensive benchmarking
