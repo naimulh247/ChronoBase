@@ -43,6 +43,9 @@ db.write(log_entry)
 results = db.query("level:INFO")
 ```
 
+## Build Package for Distribution
+Sorry working on it :(
+
 ## Configuration
 
 The `LogDB` class accepts the following parameters:
