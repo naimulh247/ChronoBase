@@ -31,3 +31,12 @@ config.local.ini
 .DS_Store
 Thumbs.db
 
+# Python package specific
+*.egg-info/
+dist/
+build/
+.eggs/
+.tox/
+.coverage
+htmlcov/
+.pytest_cache/
