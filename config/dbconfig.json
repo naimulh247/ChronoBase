@@ -1,0 +1,22 @@
+{
+    "data_dir": "./data",
+    "max_tablet_size": 268435456,
+    "block_size": 65536,
+    "flush_interval": "10m",
+    "merge_interval": "1h",
+    "compression_enabled": true,
+    "compression_type": "gzip",
+    "compression_level": 6,
+    "max_memory_usage": 1073741824,
+    "max_open_files": 1000,
+    "buffer_pool_size": 134217728,
+    "concurrent_merges": 2,
+    "query_concurrency": 4,
+    "maintenance_interval": "1h",
+    "max_file_age": "720h",
+    "backup_interval": "24h",
+    "backup_retention": 7,
+    "log_level": "info",
+    "log_file": "db.log",
+    "enable_metrics": true
+}
