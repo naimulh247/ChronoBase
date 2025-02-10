@@ -1,6 +1,6 @@
-# LogDB
+# ChronoBase
 
-LogDB is a high-performance, embedded time-series database written in Go, designed for efficient storage and retrieval of log and metric data. It features a modular architecture with configurable storage policies, compression, and automatic data management.
+ChronoBase is a high-performance, embedded time-series database written in Go, designed for efficient storage and retrieval of log and metric data. It features a modular architecture with configurable storage policies, compression, and automatic data management.
 
 ## Features
 
@@ -25,8 +25,8 @@ LogDB is a high-performance, embedded time-series database written in Go, design
 ### Installation
 
 ```bash
-git clone https://github.com/naimulh247/logdb.git
-cd logdb
+git clone https://github.com/naimulh247/ChronoBase.git
+cd ChronoBase
 go build
 ```
 
@@ -63,7 +63,7 @@ results, err := database.Query("metrics", startTime, endTime)
 
 ## Configuration
 
-LogDB can be configured via a JSON configuration file. Example configuration:
+ChronoBase can be configured via a JSON configuration file. Example configuration:
 
 ```json
 {
@@ -92,7 +92,7 @@ LogDB can be configured via a JSON configuration file. Example configuration:
 
 ## Architecture
 
-LogDB uses a tablet-based storage architecture:
+ChronoBase uses a tablet-based storage architecture:
 - Data is organized into tables
 - Each table contains multiple tablets
 - Tablets store data in compressed blocks

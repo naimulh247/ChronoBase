@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/naimulh247/logdb/internal/utils"
+	"github.com/naimulh247/ChronoBase/internal/utils"
 )
 
 // Table represents a collection of tablets
@@ -248,6 +248,9 @@ func (t *Table) Merge() error {
     if t.merging {
         return fmt.Errorf("merge already in progress")
     }
+
+    log.Printf("Starting merge for table %s with %d tablets", 
+        t.name, len(t.diskTablets))
 
     t.merging = true
     defer func() { t.merging = false }()

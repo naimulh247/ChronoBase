@@ -12,9 +12,9 @@ import (
 	// "syscall"
 	"time"
 
-	"github.com/naimulh247/logdb/internal/config"
-	"github.com/naimulh247/logdb/internal/storage"
-	"github.com/naimulh247/logdb/pkg/db"
+	"github.com/naimulh247/ChronoBase/internal/config"
+	"github.com/naimulh247/ChronoBase/internal/storage"
+	"github.com/naimulh247/ChronoBase/pkg/db"
 )
 
 // func main() {
@@ -171,7 +171,7 @@ func main() {
 	}
 
 	// Add timeout for automatic shutdown
-	shutdownTimeout := time.After(5 * time.Second)
+	shutdownTimeout := time.After(5 * time.Minute)
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
 

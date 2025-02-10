@@ -3,7 +3,7 @@ package db
 import (
 	"time"
 
-	"github.com/naimulh247/logdb/internal/storage"
+	"github.com/naimulh247/ChronoBase/internal/storage"
 )
 
 // TableOptions defines options for table creation

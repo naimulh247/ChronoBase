@@ -10,9 +10,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/naimulh247/logdb/internal/config"
-	"github.com/naimulh247/logdb/internal/storage"
-	"github.com/naimulh247/logdb/internal/utils"
+	"github.com/naimulh247/ChronoBase/internal/config"
+	"github.com/naimulh247/ChronoBase/internal/storage"
+	"github.com/naimulh247/ChronoBase/internal/utils"
 )
 
 // DB represents the database instance
@@ -261,6 +261,7 @@ func (db *DB) startBackgroundTasks() error {
                 if db.closed {
                     return
                 }
+                
                 db.mergeAllTables()
             }
         }

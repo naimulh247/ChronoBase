@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-// Config represents the complete configuration for LogDB
+// Config represents the complete configuration for ChronoBase
 type Config struct {
 	// Basic settings
 	DataDir       string   `json:"data_dir"`
@@ -260,7 +260,7 @@ func (c *Config) String() string {
 
 // GetConfigPath returns the default configuration file path
 func GetConfigPath() string {
-	if path := os.Getenv("LOGDB_CONFIG"); path != "" {
+	if path := os.Getenv("CHRONOBASE_CONFIG"); path != "" {
 		return path
 	}
 	return "config/dbconfig.json"

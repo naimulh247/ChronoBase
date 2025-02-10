@@ -3,7 +3,7 @@
     "max_tablet_size": 268435456,
     "block_size": 65536,
     "flush_interval": "10m",
-    "merge_interval": "1h",
+    "merge_interval": "1m",
     "compression_enabled": true,
     "compression_type": "gzip",
     "compression_level": 6,
