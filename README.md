@@ -1,88 +1,125 @@
 # LogDB
 
-A high-performance log database implementation in Python designed for efficient storage and querying of log entries. LogDB uses memory-mapped files for optimal I/O performance and implements an indexing system for fast data retrieval.
+LogDB is a high-performance, embedded time-series database written in Go, designed for efficient storage and retrieval of log and metric data. It features a modular architecture with configurable storage policies, compression, and automatic data management.
 
 ## Features
 
-- **Memory-Mapped File Operations**: Utilizes `mmap` for efficient file I/O operations
-- **Buffered Writing**: Implements in-memory buffering with configurable flush intervals to optimize write performance
-- **Thread-Safe Operations**: All operations are thread-safe with a background flush thread
-- **Intelligent Indexing**: Maintains an index system for fast querying of log entries
-- **Automatic File Management**: Handles file creation, resizing, and management automatically
-- **Configurable Settings**: Customizable index intervals, buffer sizes, and flush intervals
+- **Time-Series Optimized**: Purpose-built for time-series data with efficient timestamp-based indexing
+- **Configurable Storage**: Flexible tablet-based storage with automatic data management
+- **Data Compression**: Built-in GZIP compression support for optimal storage efficiency
+- **Automatic Data Management**: 
+  - Configurable TTL (Time-To-Live) for data retention
+  - Background merging of tablets for storage optimization
+  - Periodic cleanup of expired data
+- **Concurrent Operations**: Thread-safe design supporting parallel reads and writes
+- **Block-Based Storage**: Efficient block-based storage format for better I/O performance
+- **JSON Configuration**: Easy configuration via JSON files
 
-## Installation
+## Getting Started
+
+### Prerequisites
+
+- Go 1.21 or higher
+- Git
+
+### Installation
 
 ```bash
-git clone https://github.com/naimulh247/logdb
+git clone https://github.com/naimulh247/logdb.git
 cd logdb
+go build
 ```
 
-## Usage
+### Basic Usage
 
-```python
-from log_db import LogDB
-
-# Initialize the database
-db = LogDB(
-    db_path="logs.db",          # Path to the database file
-    index_interval=1000,        # Index every 1000th entry
-    buffer_size=10000,          # Buffer size before flush
-    flush_interval=0.1          # Flush interval in seconds
-)
-
-# Write log entries
-log_entry = {
-    "timestamp": "2023-11-15T10:00:00",
-    "level": "INFO",
-    "message": "Application started"
+```go
+// Create and configure database
+cfg := config.DefaultConfig()
+database, err := db.OpenDB(cfg)
+if err != nil {
+    log.Fatal(err)
 }
-db.write(log_entry)
+defer database.Close()
 
-# Query logs
-results = db.query("level:INFO")
+// Create a table
+err = database.CreateTable("metrics", db.TableOptions{
+    TTL: 24 * time.Hour,
+    PrimaryKeys: []string{"id"},
+})
+
+// Insert data
+row := storage.Row{
+    Key:       []byte("metric1"),
+    Timestamp: time.Now(),
+    Data:      []byte("example data"),
+}
+err = database.Insert("metrics", row)
+
+// Query data
+startTime := time.Now().Add(-time.Hour)
+endTime := time.Now()
+results, err := database.Query("metrics", startTime, endTime)
 ```
-
-## Build Package for Distribution
-Sorry working on it :(
 
 ## Configuration
 
-The `LogDB` class accepts the following parameters:
+LogDB can be configured via a JSON configuration file. Example configuration:
 
-- `db_path` (str): Path to the database file
-- `index_interval` (int, optional): Number of entries between each index entry. Default: 1000
-- `buffer_size` (int, optional): Size of memory buffer before flush. Default: 10000
-- `flush_interval` (float, optional): Time in seconds between buffer flushes. Default: 0.1
+```json
+{
+    "data_dir": "./data",
+    "max_tablet_size": 268435456,
+    "block_size": 65536,
+    "flush_interval": "10m",
+    "merge_interval": "1m",
+    "compression_enabled": true,
+    "compression_type": "gzip",
+    "compression_level": 6,
+    "max_memory_usage": 1073741824,
+    "max_open_files": 1000,
+    "buffer_pool_size": 134217728,
+    "concurrent_merges": 2,
+    "query_concurrency": 4,
+    "maintenance_interval": "1h",
+    "max_file_age": "720h",
+    "backup_interval": "24h",
+    "backup_retention": 7,
+    "log_level": "info",
+    "log_file": "db.log",
+    "enable_metrics": true
+}
+```
 
-## Performance Considerations
+## Architecture
 
-- The memory-mapped file implementation provides near-native I/O performance
-- Buffered writing/batched flushing reduces disk I/O operations
-- Index system enables fast querying without full file scans
-- Automatic file management handles growth efficiently
+LogDB uses a tablet-based storage architecture:
+- Data is organized into tables
+- Each table contains multiple tablets
+- Tablets store data in compressed blocks
+- In-memory buffer for recent writes
+- Background processes for merging and cleanup
 
-## Thread Safety
+### Key Components:
+- **Table Manager**: Handles table creation and management
+- **Tablet Storage**: Manages data storage in tablets
+- **Block Engine**: Efficient block-based storage format
+- **Index Manager**: Maintains time-based indices
+- **Compression Engine**: Handles data compression/decompression
 
-All operations in LogDB are thread-safe. The implementation uses:
-- Lock-based synchronization for critical sections
-- Background thread for buffer flushing
-- Thread-safe queue for managing write operations
+## Work in Progress
 
-## Use Cases
+This project is under active development. Upcoming features include:
+- Advanced querying capabilities
+- Additional compression algorithms
+- Replication support
+- Metrics and monitoring
+- Enhanced performance optimizations
+- HTTP API interface
 
-LogDB is ideal for:
-- Proof of concept and prototyping
-- High-throughput logging systems
-- Applications requiring fast log querying
-- Systems with concurrent log writers
-- Scenarios needing persistent log storage with quick access
+## Contributing
 
-## Limitations and Not Recommended For
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-LogDB is not suitable for:
-- **Critical Financial Data**: While efficient, LogDB prioritizes performance over ACID compliance and should not be used for financial transactions or critical business data requiring strict consistency, there is a high potential for data loss
-- **Large-Scale Analytics**: The indexing system is optimized for quick lookups but not for complex analytical queries or aggregations
-- **Write-Heavy Production Systems**: Although performant, the memory-mapped approach may not be optimal for extremely write-heavy production systems with millions of writes per second
-- **Long-Term Archival**: The database is designed for active log storage and querying, not for long-term archival where compression and storage efficiency are priorities
-- **Distributed Systems**: LogDB is a single-node solution and doesn't provide built-in support for distributed operations or replication. Its ideal use case is local development and testing on a single machine.
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
