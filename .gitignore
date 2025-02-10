@@ -32,3 +32,6 @@ go.work.sum
 
 # Example data
 data/
+
+# Binary file
+main
