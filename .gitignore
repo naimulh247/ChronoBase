@@ -1,42 +1,37 @@
-# Ignore Python bytecode files
-__pycache__/
-*.pyc
+# If you prefer the allow list template instead of the deny list, see community template:
+# https://github.com/github/gitignore/blob/main/community/Golang/Go.AllowList.gitignore
+#
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
 
-# Ignore virtual environment
-venv/
-env/
-.venv/
+# Test binary, bxuilt with `go test -c`
+*.test
 
-# Ignore IDE-specific files
-.vscode/
-.idea/
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
 
-# Ignore log files
-*.log
+# Dependency directories (remove the comment below to include it)
+# vendor/
 
-# Ignore database files
-*.db
+# Go workspace file
+go.work
+go.work.sum
 
-# Ignore environment variables file
+# env file
 .env
 
-# Ignore build and distribution directories
-build/
-dist/
+# VS Code
+.vscode/
 
-# Ignore any local configuration files
-config.local.ini
-
-# Ignore OS-specific files
+# Mac
 .DS_Store
-Thumbs.db
 
-# Python package specific
-*.egg-info/
-dist/
-build/
-.eggs/
-.tox/
-.coverage
-htmlcov/
-.pytest_cache/
+# Example data
+data/
+
+# Binary file
+main
