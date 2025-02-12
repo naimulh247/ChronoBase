@@ -27,11 +27,11 @@ type Tablet struct {
 // NewTablet creates a new tablet.
 func NewTablet(id string, blockSize int64) *Tablet {
 	return &Tablet{
-        ID:        id,
-        BlockSize: blockSize,
-        Rows:      make([]Row, 0, 1000), // Pre-allocate some capacity
-        mu:        sync.RWMutex{},
-    }
+		ID:        id,
+		BlockSize: blockSize,
+		Rows:      make([]Row, 0, 1000), // Pre-allocate some capacity
+		mu:        sync.RWMutex{},
+	}
 }
 
 // AddRow adds a row to the tablet
@@ -40,9 +40,9 @@ func (t *Tablet) AddRow(row Row) {
 	defer t.mu.Unlock()
 
 	// Ensure Rows slice is initialized
-    if t.Rows == nil {
-        t.Rows = make([]Row, 0, 1000)
-    }
+	if t.Rows == nil {
+		t.Rows = make([]Row, 0, 1000)
+	}
 
 	t.Rows = append(t.Rows, row)
 
@@ -59,79 +59,77 @@ func (t *Tablet) AddRow(row Row) {
 // FlushToDisk writes the tablet to disk
 // FlushToDisk writes the tablet to disk
 func (t *Tablet) FlushToDisk(dir string) error {
-    log.Printf("FlushToDisk: Starting for tablet %s", t.ID)
-    
-    // Add timeout context
-    ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-    defer cancel()
+	log.Printf("FlushToDisk: Starting for tablet %s", t.ID)
 
-    // Create a done channel for the flush operation
-    done := make(chan error, 1)
+	// Add timeout context
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
 
-    go func() {
-        t.mu.Lock()
-        defer t.mu.Unlock()
+	// Create a done channel for the flush operation
+	done := make(chan error, 1)
 
-        if t.IsOnDisk {
-            done <- fmt.Errorf("tablet %s is already on disk", t.ID)
-            return
-        }
+	go func() {
+		t.mu.Lock()
+		defer t.mu.Unlock()
 
-        filename := filepath.Join(dir, fmt.Sprintf("%s.tab", t.ID))
-        log.Printf("FlushToDisk: Writing to file %s", filename)
+		if t.IsOnDisk {
+			done <- fmt.Errorf("tablet %s is already on disk", t.ID)
+			return
+		}
 
-        err := writeTabletToDisk(t, filename)
-        if err != nil {
-            done <- fmt.Errorf("failed to write tablet to disk: %w", err)
-            return
-        }
+		filename := filepath.Join(dir, fmt.Sprintf("%s.tab", t.ID))
+		log.Printf("FlushToDisk: Writing to file %s", filename)
 
-        t.IsOnDisk = true
-        t.FilePath = filename
-        done <- nil
-    }()
+		err := writeTabletToDisk(t, filename)
+		if err != nil {
+			done <- fmt.Errorf("failed to write tablet to disk: %w", err)
+			return
+		}
 
-    // Wait for either completion or timeout
-    select {
-    case err := <-done:
-        if err == nil {
-            log.Printf("FlushToDisk: Successfully flushed tablet %s to disk", t.ID)
-        }
-        return err
-    case <-ctx.Done():
-        return fmt.Errorf("flush operation timed out after 30 seconds")
-    }
+		t.IsOnDisk = true
+		t.FilePath = filename
+		done <- nil
+	}()
+
+	// Wait for either completion or timeout
+	select {
+	case err := <-done:
+		if err == nil {
+			log.Printf("FlushToDisk: Successfully flushed tablet %s to disk", t.ID)
+		}
+		return err
+	case <-ctx.Done():
+		return fmt.Errorf("flush operation timed out after 30 seconds")
+	}
 }
 
 // Query returns rows within the given timestamp range
 func (t *Tablet) Query(startTime, endTime time.Time) ([]Row, error) {
-    t.mu.RLock()
-    defer t.mu.RUnlock()
+	t.mu.RLock()
+	defer t.mu.RUnlock()
 
-    log.Printf("Tablet %s: Querying from %v to %v", t.ID, startTime, endTime)
-    log.Printf("Tablet %s: Time range is MinTS=%v, MaxTS=%v", t.ID, t.MinTS, t.MaxTS)
+	log.Printf("Tablet %s: Querying from %v to %v", t.ID, startTime, endTime)
+	log.Printf("Tablet %s: Time range is MinTS=%v, MaxTS=%v", t.ID, t.MinTS, t.MaxTS)
 
-    if t.IsOnDisk {
-        log.Printf("Tablet %s: Querying from disk", t.ID)
-        return queryDiskTablet(t, startTime, endTime)
-    }
+	if t.IsOnDisk {
+		log.Printf("Tablet %s: Querying from disk", t.ID)
+		return queryDiskTablet(t, startTime, endTime)
+	}
 
-    log.Printf("Tablet %s: Querying from memory", t.ID)
-    return queryMemoryTablet(t, startTime, endTime), nil
+	log.Printf("Tablet %s: Querying from memory", t.ID)
+	return queryMemoryTablet(t, startTime, endTime), nil
 }
-
 
 // Sort sorts the rows in the tablet
 func (t *Tablet) Sort() {
-    // No need for mutex since the tablet is already locked during flush
-    sort.Slice(t.Rows, func(i, j int) bool {
-        if t.Rows[i].Timestamp.Equal(t.Rows[j].Timestamp) {
-            return string(t.Rows[i].Key) < string(t.Rows[j].Key)
-        }
-        return t.Rows[i].Timestamp.Before(t.Rows[j].Timestamp)
-    })
+	// No need for mutex since the tablet is already locked during flush
+	sort.Slice(t.Rows, func(i, j int) bool {
+		if t.Rows[i].Timestamp.Equal(t.Rows[j].Timestamp) {
+			return string(t.Rows[i].Key) < string(t.Rows[j].Key)
+		}
+		return t.Rows[i].Timestamp.Before(t.Rows[j].Timestamp)
+	})
 }
-
 
 // Size returns the number of rows in the tablet
 func (t *Tablet) Size() int {
@@ -161,36 +159,36 @@ func (t *Tablet) Delete() error {
 
 // LoadMetadata loads the tablet's metadata from disk
 func (t *Tablet) LoadMetadata() error {
-    file, err := os.Open(t.FilePath)
-    if err != nil {
-        return fmt.Errorf("failed to open tablet file: %w", err)
-    }
-    defer file.Close()
+	file, err := os.Open(t.FilePath)
+	if err != nil {
+		return fmt.Errorf("failed to open tablet file: %w", err)
+	}
+	defer file.Close()
 
-    // Read the block to get time range
-    block, err := readBlock(file, 0) // Read first block
-    if err != nil {
-        return fmt.Errorf("failed to read first block: %w", err)
-    }
+	// Read the block to get time range
+	block, err := readBlock(file, 0) // Read first block
+	if err != nil {
+		return fmt.Errorf("failed to read first block: %w", err)
+	}
 
-    if len(block) > 0 {
-        t.MinTS = block[0].Timestamp
-        t.MaxTS = block[0].Timestamp
+	if len(block) > 0 {
+		t.MinTS = block[0].Timestamp
+		t.MaxTS = block[0].Timestamp
 
-        // Find min and max timestamps
-        for _, row := range block {
-            if row.Timestamp.Before(t.MinTS) {
-                t.MinTS = row.Timestamp
-            }
-            if row.Timestamp.After(t.MaxTS) {
-                t.MaxTS = row.Timestamp
-            }
-        }
-    }
+		// Find min and max timestamps
+		for _, row := range block {
+			if row.Timestamp.Before(t.MinTS) {
+				t.MinTS = row.Timestamp
+			}
+			if row.Timestamp.After(t.MaxTS) {
+				t.MaxTS = row.Timestamp
+			}
+		}
+	}
 
-    log.Printf("Loaded tablet %s metadata: MinTS=%v, MaxTS=%v", 
-        t.ID, t.MinTS, t.MaxTS)
-    return nil
+	log.Printf("Loaded tablet %s metadata: MinTS=%v, MaxTS=%v",
+		t.ID, t.MinTS, t.MaxTS)
+	return nil
 }
 
 /* Disk operation functions:
@@ -203,86 +201,84 @@ func (t *Tablet) LoadMetadata() error {
 
 // writeTabletToDisk writes the tablet to disk with block-based organization
 func writeTabletToDisk(tablet *Tablet, filename string) error {
-    log.Printf("writeTabletToDisk: Creating file %s", filename)
-    file, err := os.Create(filename)
-    if err != nil {
-        log.Printf("writeTabletToDisk: Failed to create file: %v", err)
-        return fmt.Errorf("failed to create tablet file: %v", err)
-    }
-    defer file.Close()
-
+	log.Printf("writeTabletToDisk: Creating file %s", filename)
+	file, err := os.Create(filename)
+	if err != nil {
+		log.Printf("writeTabletToDisk: Failed to create file: %v", err)
+		return fmt.Errorf("failed to create tablet file: %v", err)
+	}
+	defer file.Close()
 
 	// Add row count logging
-    log.Printf("writeTabletToDisk: Number of rows before sorting: %d", len(tablet.Rows))
-    
-    // Sort rows before writing
-    log.Println("writeTabletToDisk: Starting row sort")
-    tablet.Sort()
-    log.Println("writeTabletToDisk: Row sort completed")
+	log.Printf("writeTabletToDisk: Number of rows before sorting: %d", len(tablet.Rows))
 
-    // Write blocks
-    var blockOffsets []int64
-    var lastKeys [][]byte
-    currentBlock := make([]Row, 0)
-    currentBlockSize := int64(0)
+	// Sort rows before writing
+	log.Println("writeTabletToDisk: Starting row sort")
+	tablet.Sort()
+	log.Println("writeTabletToDisk: Row sort completed")
 
-    log.Printf("writeTabletToDisk: Processing %d rows", len(tablet.Rows))
-    for _, row := range tablet.Rows {
-        rowSize := estimateRowSize(row)
-        
-        if currentBlockSize+rowSize > tablet.BlockSize && len(currentBlock) > 0 {
-            // Write current block
-            log.Println("writeTabletToDisk: Writing block")
-            offset, err := writeBlock(file, currentBlock)
-            if err != nil {
-                log.Printf("writeTabletToDisk: Failed to write block: %v", err)
-                return err
-            }
+	// Write blocks
+	var blockOffsets []int64
+	var lastKeys [][]byte
+	currentBlock := make([]Row, 0)
+	currentBlockSize := int64(0)
 
-            // Update index information
-            blockOffsets = append(blockOffsets, offset)
-            lastKeys = append(lastKeys, currentBlock[len(currentBlock)-1].Key)
+	log.Printf("writeTabletToDisk: Processing %d rows", len(tablet.Rows))
+	for _, row := range tablet.Rows {
+		rowSize := estimateRowSize(row)
 
-            // Reset block
-            currentBlock = currentBlock[:0]
-            currentBlockSize = 0
-        }
+		if currentBlockSize+rowSize > tablet.BlockSize && len(currentBlock) > 0 {
+			// Write current block
+			log.Println("writeTabletToDisk: Writing block")
+			offset, err := writeBlock(file, currentBlock)
+			if err != nil {
+				log.Printf("writeTabletToDisk: Failed to write block: %v", err)
+				return err
+			}
 
-        currentBlock = append(currentBlock, row)
-        currentBlockSize += rowSize
-    }
+			// Update index information
+			blockOffsets = append(blockOffsets, offset)
+			lastKeys = append(lastKeys, currentBlock[len(currentBlock)-1].Key)
 
-    // Write final block if not empty
-    if len(currentBlock) > 0 {
-        log.Println("writeTabletToDisk: Writing final block")
-        offset, err := writeBlock(file, currentBlock)
-        if err != nil {
-            log.Printf("writeTabletToDisk: Failed to write final block: %v", err)
-            return err
-        }
-        blockOffsets = append(blockOffsets, offset)
-        lastKeys = append(lastKeys, currentBlock[len(currentBlock)-1].Key)
-    }
+			// Reset block
+			currentBlock = currentBlock[:0]
+			currentBlockSize = 0
+		}
 
-    // Write index
-    log.Println("writeTabletToDisk: Writing index")
-    indexOffset, err := writeIndex(file, blockOffsets, lastKeys)
-    if err != nil {
-        log.Printf("writeTabletToDisk: Failed to write index: %v", err)
-        return err
-    }
+		currentBlock = append(currentBlock, row)
+		currentBlockSize += rowSize
+	}
 
-    // Write index offset at the end
-    log.Println("writeTabletToDisk: Writing index offset")
-    if err := binary.Write(file, binary.BigEndian, indexOffset); err != nil {
-        log.Printf("writeTabletToDisk: Failed to write index offset: %v", err)
-        return fmt.Errorf("failed to write index offset: %v", err)
-    }
+	// Write final block if not empty
+	if len(currentBlock) > 0 {
+		log.Println("writeTabletToDisk: Writing final block")
+		offset, err := writeBlock(file, currentBlock)
+		if err != nil {
+			log.Printf("writeTabletToDisk: Failed to write final block: %v", err)
+			return err
+		}
+		blockOffsets = append(blockOffsets, offset)
+		lastKeys = append(lastKeys, currentBlock[len(currentBlock)-1].Key)
+	}
 
-    log.Println("writeTabletToDisk: Successfully wrote tablet to disk")
-    return nil
+	// Write index
+	log.Println("writeTabletToDisk: Writing index")
+	indexOffset, err := writeIndex(file, blockOffsets, lastKeys)
+	if err != nil {
+		log.Printf("writeTabletToDisk: Failed to write index: %v", err)
+		return err
+	}
+
+	// Write index offset at the end
+	log.Println("writeTabletToDisk: Writing index offset")
+	if err := binary.Write(file, binary.BigEndian, indexOffset); err != nil {
+		log.Printf("writeTabletToDisk: Failed to write index offset: %v", err)
+		return fmt.Errorf("failed to write index offset: %v", err)
+	}
+
+	log.Println("writeTabletToDisk: Successfully wrote tablet to disk")
+	return nil
 }
-
 
 // writeBlock writes a block of rows to disk
 func writeBlock(file *os.File, rows []Row) (int64, error) {
@@ -333,91 +329,51 @@ func readBlock(file *os.File, offset int64) ([]Row, error) {
 
 // queryDiskTablet reads the tablet from disk and returns rows within the given timestamp range
 func queryDiskTablet(t *Tablet, startTime, endTime time.Time) ([]Row, error) {
-    log.Printf("Opening tablet file: %s", t.FilePath)
-    file, err := os.Open(t.FilePath)
-    if err != nil {
-        return nil, fmt.Errorf("failed to open tablet file: %w", err)
-    }
-    defer file.Close()
+	log.Printf("Opening tablet file: %s", t.FilePath)
+	file, err := os.Open(t.FilePath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to open tablet file: %w", err)
+	}
+	defer file.Close()
 
-    // Read the index
-    log.Println("Reading tablet index")
-    index, err := readTabletIndex(file)
-    if err != nil {
-        return nil, fmt.Errorf("failed to read tablet index: %w", err)
-    }
+	// Read the index
+	log.Println("Reading tablet index")
+	index, err := readTabletIndex(file)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read tablet index: %w", err)
+	}
 
-    var results []Row
+	var results []Row
 
-    // Find relevant blocks
-    startBlock := 0  // Always start from first block for small datasets
-    endBlock := index.BlockCount - 1  // Read all blocks
+	// Find relevant blocks
+	startBlock := 0                  // Always start from first block for small datasets
+	endBlock := index.BlockCount - 1 // Read all blocks
 
-    log.Printf("Reading blocks from %d to %d", startBlock, endBlock)
+	log.Printf("Reading blocks from %d to %d", startBlock, endBlock)
 
-    // Read blocks
-    for i := startBlock; i <= endBlock; i++ {
-        log.Printf("Reading block %d at offset %d", i, index.BlockOffsets[i])
-        block, err := readBlock(file, index.BlockOffsets[i])
-        if err != nil {
-            return nil, fmt.Errorf("failed to read block %d: %w", i, err)
-        }
+	// Read blocks
+	for i := startBlock; i <= endBlock; i++ {
+		log.Printf("Reading block %d at offset %d", i, index.BlockOffsets[i])
+		block, err := readBlock(file, index.BlockOffsets[i])
+		if err != nil {
+			return nil, fmt.Errorf("failed to read block %d: %w", i, err)
+		}
 
-        // Filter rows by time range
-        for _, row := range block {
-            log.Printf("Checking row with timestamp %v against range [%v, %v]", 
-                row.Timestamp, startTime, endTime)
-            if (row.Timestamp.Equal(startTime) || row.Timestamp.After(startTime)) &&
-                (row.Timestamp.Equal(endTime) || row.Timestamp.Before(endTime)) {
-                log.Printf("Row matched: Key=%s, Time=%v", string(row.Key), row.Timestamp)
-                results = append(results, row)
-            }
-        }
-    }
-    
-    log.Printf("Found %d matching rows in disk tablet", len(results))
-    return results, nil
+		// Filter rows by time range
+		for _, row := range block {
+			log.Printf("Checking row with timestamp %v against range [%v, %v]",
+				row.Timestamp, startTime, endTime)
+			if (row.Timestamp.Equal(startTime) || row.Timestamp.After(startTime)) &&
+				(row.Timestamp.Equal(endTime) || row.Timestamp.Before(endTime)) {
+				log.Printf("Row matched: Key=%s, Time=%v", string(row.Key), row.Timestamp)
+				results = append(results, row)
+			}
+		}
+	}
+
+	log.Printf("Found %d matching rows in disk tablet", len(results))
+	return results, nil
 }
-
-
-
-// func queryDiskTablet(t *Tablet, startTime, endTime time.Time) ([]Row, error) {
-// 	file, err := os.Open(t.FilePath)
-// 	if err != nil {
-// 		return nil, fmt.Errorf("failed to open tablet file: %w", err)
-// 	}
-// 	defer file.Close()
-
-// 	// Read the index
-// 	index, err := readTabletIndex(file)
-// 	if err != nil {
-// 		return nil, fmt.Errorf("failed to read tablet index: %w", err)
-// 	}
-
-// 	var results []Row
-
-// 	// Find relevant blocks
-// 	startBlock := findBlockForTime(index, startTime)
-// 	endBlock := findBlockForTime(index, endTime)
-
-// 	// Read blocks
-// 	for i := startBlock; i <= endBlock && i < len(index.BlockOffsets); i++ {
-// 		block, err := readBlock(file, index.BlockOffsets[i])
-// 		if err != nil {
-// 			return nil, fmt.Errorf("failed to read block: %w", err)
-// 		}
-
-// 		// Filter row by time range
-// 		for _, row := range block {
-// 			if !row.Timestamp.Before(startTime) && !row.Timestamp.After(endTime) {
-// 				results = append(results, row)
-// 			}
-// 		}
-
-// 	}
-	
-// 	return results, nil
-// }
 
 // queryMemoryTablet queries an in-memory tablet and returns rows within the given timestamp range
 func queryMemoryTablet(t *Tablet, startTime, endTime time.Time) []Row {
@@ -470,37 +426,37 @@ func serializeRows(rows []Row) []byte {
 
 // deserializeRows deserializes a byte slice into rows
 func deserializeRows(data []byte) []Row {
-    var rows []Row
-    offset := 0
-    
-    for offset < len(data) {
-        // Read key length
-        keyLen := binary.BigEndian.Uint32(data[offset:])
-        offset += 4
-        
-        // Read key
-        key := make([]byte, keyLen)
-        copy(key, data[offset:offset+int(keyLen)])
-        offset += int(keyLen)
-        
-        // Read timestamp
-        ts := binary.BigEndian.Uint64(data[offset:])
-        offset += 8
-        
-        // Read data length
-        dataLen := binary.BigEndian.Uint32(data[offset:])
-        offset += 4
-        
-        // Read data
-        rowData := make([]byte, dataLen)
-        copy(rowData, data[offset:offset+int(dataLen)])
-        offset += int(dataLen)
-        
-        rows = append(rows, Row{
-            Key:       key,
-            Timestamp: time.Unix(0, int64(ts)),
-            Data:      rowData,
-        })
-    }
-    return rows
+	var rows []Row
+	offset := 0
+
+	for offset < len(data) {
+		// Read key length
+		keyLen := binary.BigEndian.Uint32(data[offset:])
+		offset += 4
+
+		// Read key
+		key := make([]byte, keyLen)
+		copy(key, data[offset:offset+int(keyLen)])
+		offset += int(keyLen)
+
+		// Read timestamp
+		ts := binary.BigEndian.Uint64(data[offset:])
+		offset += 8
+
+		// Read data length
+		dataLen := binary.BigEndian.Uint32(data[offset:])
+		offset += 4
+
+		// Read data
+		rowData := make([]byte, dataLen)
+		copy(rowData, data[offset:offset+int(dataLen)])
+		offset += int(dataLen)
+
+		rows = append(rows, Row{
+			Key:       key,
+			Timestamp: time.Unix(0, int64(ts)),
+			Data:      rowData,
+		})
+	}
+	return rows
 }
