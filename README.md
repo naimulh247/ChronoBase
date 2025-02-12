@@ -5,11 +5,11 @@ ChronoBase is a high-performance, embedded time-series database written in Go, d
 ## Features
 
 - **Time-Series Optimized**: Purpose-built for time-series data with efficient timestamp-based indexing
-- **Configurable Storage**: Flexible tablet-based storage with automatic data management
+- **Configurable Storage**: Flexible tablet/shard-based storage with automatic data management
 - **Data Compression**: Built-in GZIP compression support for optimal storage efficiency
 - **Automatic Data Management**: 
   - Configurable TTL (Time-To-Live) for data retention
-  - Background merging of tablets for storage optimization
+  - Background merging of tablets/shard for storage optimization
   - Periodic cleanup of expired data
 - **Concurrent Operations**: Thread-safe design supporting parallel reads and writes
 - **Block-Based Storage**: Efficient block-based storage format for better I/O performance
@@ -92,16 +92,16 @@ ChronoBase can be configured via a JSON configuration file. Example configuratio
 
 ## Architecture
 
-ChronoBase uses a tablet-based storage architecture:
+ChronoBase uses a tablet/shard-based storage architecture:
 - Data is organized into tables
 - Each table contains multiple tablets
-- Tablets store data in compressed blocks
+- Tablets/shard store data in compressed blocks
 - In-memory buffer for recent writes
 - Background processes for merging and cleanup
 
 ### Key Components:
 - **Table Manager**: Handles table creation and management
-- **Tablet Storage**: Manages data storage in tablets
+- **Tablet Storage**: Manages data storage in tablets/shard
 - **Block Engine**: Efficient block-based storage format
 - **Index Manager**: Maintains time-based indices
 - **Compression Engine**: Handles data compression/decompression
