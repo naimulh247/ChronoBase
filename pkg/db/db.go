@@ -35,44 +35,6 @@ type backgroundTasks struct {
 }
 
 // OpenDB creates or opens a database with the given configuration
-// func OpenDB(cfg *config.Config) (*DB, error) {
-//     if err := cfg.Validate(); err != nil {
-//         return nil, fmt.Errorf("invalid configuration: %w", err)
-//     }
-
-//     // Ensure data directory exists
-//     if err := utils.EnsureDir(cfg.DataDir); err != nil {
-//         return nil, fmt.Errorf("failed to create data directory: %w", err)
-//     }
-
-//     ctx, cancel := context.WithCancel(context.Background())
-//     db := &DB{
-//         config: cfg,
-//         tables: make(map[string]*storage.Table),
-//         background: &backgroundTasks{
-//             ctx:           ctx,
-//             cancel:        cancel,
-//             flushTicker:   time.NewTicker(cfg.FlushInterval.Duration),
-//             mergeTicker:   time.NewTicker(cfg.MergeInterval.Duration),
-//             cleanupTicker: time.NewTicker(cfg.MaintenanceInterval.Duration),
-//         },
-//     }
-
-//     // Start background tasks
-//     if err := db.startBackgroundTasks(); err != nil {
-//         db.Close()
-//         return nil, fmt.Errorf("failed to start background tasks: %w", err)
-//     }
-
-//     // Load existing tables
-//     if err := db.loadExistingTables(); err != nil {
-//         db.Close()
-//         return nil, fmt.Errorf("failed to load existing tables: %w", err)
-//     }
-
-//     return db, nil
-// }
-
 func OpenDB(cfg *config.Config) (*DB, error) {
     log.Println("Validating configuration...")
     if err := cfg.Validate(); err != nil {
