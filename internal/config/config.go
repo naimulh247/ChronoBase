@@ -207,45 +207,6 @@ func (c *Config) Validate() error {
 	return nil
 }
 
-// SetDefaults sets any unset values to their defaults
-// func (c *Config) SetDefaults() {
-// 	defaults := DefaultConfig()
-
-// 	if c.DataDir == "" {
-// 		c.DataDir = defaults.DataDir
-// 	}
-// 	if c.MaxTabletSize <= 0 {
-// 		c.MaxTabletSize = defaults.MaxTabletSize
-// 	}
-// 	if c.BlockSize <= 0 {
-// 		c.BlockSize = defaults.BlockSize
-// 	}
-// 	if c.FlushInterval <= 0 {
-// 		c.FlushInterval = defaults.FlushInterval
-// 	}
-// 	if c.MergeInterval <= 0 {
-// 		c.MergeInterval = defaults.MergeInterval
-// 	}
-// 	if c.MaxMemoryUsage <= 0 {
-// 		c.MaxMemoryUsage = defaults.MaxMemoryUsage
-// 	}
-// 	if c.MaxOpenFiles <= 0 {
-// 		c.MaxOpenFiles = defaults.MaxOpenFiles
-// 	}
-// 	if c.BufferPoolSize <= 0 {
-// 		c.BufferPoolSize = defaults.BufferPoolSize
-// 	}
-// 	if c.ConcurrentMerges <= 0 {
-// 		c.ConcurrentMerges = defaults.ConcurrentMerges
-// 	}
-// 	if c.QueryConcurrency <= 0 {
-// 		c.QueryConcurrency = defaults.QueryConcurrency
-// 	}
-// 	if c.LogLevel == "" {
-// 		c.LogLevel = defaults.LogLevel
-// 	}
-// }
-
 // Clone creates a deep copy of the configuration
 func (c *Config) Clone() *Config {
 	clone := *c
